@@ -90,20 +90,20 @@ public class RideController {
         String status = "";
 
         Map<MajorState, String> cabMajorState = new HashMap<>();
-        cabMajorState.put(MajorState.SignedIn, "SignedIn");
-        cabMajorState.put(MajorState.SignedOut, "SignedOut");
+        cabMajorState.put(MajorState.SignedIn, "signed-in");
+        cabMajorState.put(MajorState.SignedOut, "signed-out");
 
         Map<MinorState, String> cabMinorState = new HashMap<>();
-        cabMinorState.put(MinorState.Available, "Available");
-        cabMinorState.put(MinorState.Committed, "Committed");
-        cabMinorState.put(MinorState.GivingRide, "GivingRide");
-        cabMinorState.put(MinorState.NotAvailable, "NotAvailable");
+        cabMinorState.put(MinorState.Available, "available");
+        cabMinorState.put(MinorState.Committed, "committed");
+        cabMinorState.put(MinorState.GivingRide, "giving-ride");
+        cabMinorState.put(MinorState.NotAvailable, "");
 
         status += cabMajorState.get(cab.getMajorState());
         status += " " + cabMinorState.get(cab.getMinorState());
 
         if(cab.getMajorState() == MajorState.SignedOut) {
-            status += " -1";
+            status += " " + -1;
         }
         else {
             status += " " + cab.getLocation();
@@ -130,6 +130,7 @@ public class RideController {
         Cab[] cabsSignedIn = rideService.getAllSignedInCabs();
         for(Cab cab: cabsSignedIn) {
             rideService.cabSignOut(cab.getCabId());
+            log.info("" + cab.getCabId());
         }
 
     }
