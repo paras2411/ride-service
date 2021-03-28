@@ -8,8 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-
 @Service
 public class RideService {
 
@@ -18,6 +16,9 @@ public class RideService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    private final String cabUrl = "http://localhost:8080/";
+    private final String walletUrl = "http://localhost:8082/";
 
     public Ride saveRide(Ride ride) {
 
@@ -35,7 +36,7 @@ public class RideService {
     public Cab[] getAllCabs(int loc) {
 
         ResponseEntity<Cab[]> response = restTemplate.getForEntity(
-                "http://localhost:8080/cab/get-cabs?location=" + loc,
+                cabUrl + "getCabs?location=" + loc,
                 Cab[].class);
 
         return response.getBody();
@@ -44,7 +45,7 @@ public class RideService {
     public Boolean requestRide(int cabId, int rideId, int sourceLoc, int destinationLoc) {
 
         return restTemplate.getForObject(
-                "http://localhost:8080/cab/request-ride?" +
+                cabUrl + "requestRide?" +
                         "cabId=" + cabId +
                         "&rideId=" + rideId +
                         "&sourceLoc=" + sourceLoc +
@@ -55,7 +56,7 @@ public class RideService {
     public Boolean deductAmountFromWallet(int custId, int fare) {
 
         return restTemplate.getForObject(
-                "http://localhost:8082/wallet/deduct-amount?" +
+                cabUrl + "deductAmount?" +
                         "custId=" + custId +
                         "&amount=" + fare,
                 Boolean.class);
@@ -64,7 +65,7 @@ public class RideService {
     public Boolean rideStarted(int cabId, int rideId) {
 
         return restTemplate.getForObject(
-                "http://localhost:8080/cab/ride-started?" +
+                cabUrl + "rideStarted?" +
                         "cabId=" + cabId +
                         "&rideId=" + rideId,
                 Boolean.class);
@@ -73,7 +74,7 @@ public class RideService {
     public void rideCancelled(int cabId, int rideId) {
 
         restTemplate.getForObject(
-                "http://localhost:8080/cab/ride-cancelled?" +
+                cabUrl + "rideCancelled?" +
                         "cabId=" + cabId +
                         "&rideId=" + rideId,
                 Boolean.class
@@ -83,7 +84,7 @@ public class RideService {
     public Boolean isCabSignedOut(int cabId) {
 
         return restTemplate.getForObject(
-                "http://localhost:8080/cab/cab-signed-out?" +
+                cabUrl + "cabSignedOut?" +
                         "cabId=" + cabId,
                 Boolean.class
         );
@@ -92,7 +93,7 @@ public class RideService {
     public Boolean isCabSignedIn(int cabId) {
 
         return restTemplate.getForObject(
-                "http://localhost:8080/cab/cab-signed-in?" +
+                cabUrl + "cabSignedIn?" +
                         "cabId=" + cabId,
                 Boolean.class
         );
@@ -101,7 +102,7 @@ public class RideService {
     public Cab[] getCabsGivingRide() {
 
         ResponseEntity<Cab[]> response = restTemplate.getForEntity(
-                "http://localhost:8080/cab/cabs-giving-ride",
+                cabUrl + "cabsGivingRide",
                 Cab[].class
         );
 
@@ -110,7 +111,7 @@ public class RideService {
 
     public Cab[] getAllSignedInCabs() {
         ResponseEntity<Cab[]> response = restTemplate.getForEntity(
-                "http://localhost:8080/cab/all-cabs-signed-in",
+                cabUrl + "allCabsSignedIn",
                 Cab[].class
         );
 
@@ -119,7 +120,7 @@ public class RideService {
 
     public void endCabRide(int cabId, int rideId) {
         restTemplate.getForObject(
-                "http://localhost:8080/cab/ride-ended?" +
+                cabUrl + "rideEnded?" +
                         "cabId=" + cabId +
                         "&rideId=" + rideId,
                 Void.class
@@ -128,7 +129,7 @@ public class RideService {
 
     public void cabSignOut(int cabId) {
         restTemplate.getForObject(
-                "http://localhost:8080/cab/sign-out?" +
+                cabUrl + "signOut?" +
                         "cabId=" + cabId,
                 Void.class
         );
@@ -140,7 +141,7 @@ public class RideService {
 
     public Cab getCabsByCabId(int cabId) {
         return restTemplate.getForObject(
-                "http://localhost:8080/cab/cab-details?" +
+                cabUrl + "cabDetails?" +
                         "cabId=" + cabId,
                 Cab.class
         );
@@ -148,7 +149,7 @@ public class RideService {
 
     public Integer getRideId(int cabId) {
         return restTemplate.getForObject(
-                "http://localhost:8080/cab/ride-id?" +
+                cabUrl + "rideId?" +
                         "cabId=" + cabId,
                 Integer.class
         );

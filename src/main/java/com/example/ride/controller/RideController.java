@@ -10,13 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.lang.Math.abs;
 
 @RestController
-@RequestMapping("/ride")
+@RequestMapping("")
 @Slf4j
 public class RideController {
 
@@ -30,19 +29,9 @@ public class RideController {
         return rideService.saveRide(ride);
     }
 
-    @GetMapping("/rides-extract")
-    public int rideExtract(@RequestParam int custId) {
-        return rideService.rideExtract(custId);
-    }
-
-    @GetMapping("/check")
-    public boolean check(@RequestParam int custId, @RequestParam int amount) {
-        return rideService.deductAmountFromWallet(custId, amount);
-    }
-
-    @GetMapping("/ride-ended")
+    @GetMapping("/rideEnded")
     public boolean rideEnded(@RequestParam int rideId) {
-        // cab service use this endpoint to signal that ride has ended. return true if rideId corresponding to ongoing
+
         Ride ride = rideService.findByRideId(rideId);
         boolean canRideEnd =  ride != null && ride.isOngoing();
         if(canRideEnd) {
@@ -51,23 +40,20 @@ public class RideController {
         return canRideEnd;
     }
 
-    @GetMapping("/cab-signs-in")
-    public boolean cabSignIn(@RequestParam int cabId,
+    @GetMapping("/cabSignsIn")
+    public boolean cabSignsIn(@RequestParam int cabId,
                              @RequestParam int initialPos) {
 
-        // cab service invokes this to sign in and notify company that it has started at initialPos.
-        // true if cabId is valid else cab is not already signed in
         return rideService.isCabSignedOut(cabId);
     }
 
-    @GetMapping("/cab-signs-out")
+    @GetMapping("/cabSignsOut")
     public boolean cabSignsOut(@RequestParam int cabId) {
 
-        // cab service use this to sign out. response is true if cabId is valid and in available state.
         return rideService.isCabSignedIn(cabId);
     }
 
-    @GetMapping("/request-ride")
+    @GetMapping("/requestRide")
     public int requestRide(@RequestParam int custId,
                            @RequestParam int sourceLoc,
                            @RequestParam int destinationLoc) {
@@ -84,6 +70,7 @@ public class RideController {
                 if(deductedAmount) {
                     boolean startedRide = rideService.rideStarted(cab.getCabId(), ride.getRideId());
                     if(startedRide) {
+                        rideService.updateOngoing(ride.getRideId(), true);
                         return ride.getRideId();
                     }
                 }
@@ -96,7 +83,7 @@ public class RideController {
         return -1;
     }
 
-    @GetMapping("/get-cab-status")
+    @GetMapping("/getCabStatus")
     public String getCabStatus(@RequestParam int cabId) {
 
         Cab cab = rideService.getCabsByCabId(cabId);
@@ -113,7 +100,7 @@ public class RideController {
         cabMinorState.put(MinorState.NotAvailable, "NotAvailable");
 
         status += cabMajorState.get(cab.getMajorState());
-        status += cabMinorState.get(cab.getMinorState());
+        status += " " + cabMinorState.get(cab.getMinorState());
 
         if(cab.getMajorState() == MajorState.SignedOut) {
             status += " -1";
@@ -129,15 +116,12 @@ public class RideController {
             status += " " + ride.getDestinationLoc();
         }
 
-
         return status;
     }
 
-    @GetMapping("/reset/")
+    @GetMapping("/reset")
     public void reset() {
 
-        // for testing. end point should send cab.rideEnded requests to all cabs that are in giving-ride state
-        // then send cab.signOut requests to all cabs that are sign-in state
         Cab[] cabsGivingRide = rideService.getCabsGivingRide();
         for(Cab cab: cabsGivingRide) {
             int rideId = rideService.getRideId(cab.getCabId());
