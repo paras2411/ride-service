@@ -56,7 +56,7 @@ public class RideService {
     public Boolean deductAmountFromWallet(int custId, int fare) {
 
         return restTemplate.getForObject(
-                cabUrl + "deductAmount?" +
+                walletUrl + "deductAmount?" +
                         "custId=" + custId +
                         "&amount=" + fare,
                 Boolean.class);

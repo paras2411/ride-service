@@ -63,7 +63,7 @@ public class RideController {
         Cab[] cabs = rideService.getAllCabs(sourceLoc);
         int counter = 0;
         for(Cab cab: cabs) {
-            boolean acceptedRide = rideService.requestRide(cab.getCabId(), ride.getRideId(), sourceLoc, destinationLoc);
+            boolean acceptedRide= rideService.requestRide(cab.getCabId(), ride.getRideId(), sourceLoc, destinationLoc);
             if(acceptedRide) {
                 int fare = abs(destinationLoc - sourceLoc) * 10 + abs(cab.getLocation() - sourceLoc) * 10;
                 boolean deductedAmount = rideService.deductAmountFromWallet(custId, fare);
@@ -99,8 +99,10 @@ public class RideController {
         cabMinorState.put(MinorState.GivingRide, "giving-ride");
         cabMinorState.put(MinorState.NotAvailable, "");
 
-        status += cabMajorState.get(cab.getMajorState());
-        status += " " + cabMinorState.get(cab.getMinorState());
+        if(cab.getMajorState() == MajorState.SignedOut)
+            status += cabMajorState.get(cab.getMajorState());
+        else
+            status += cabMinorState.get(cab.getMinorState());
 
         if(cab.getMajorState() == MajorState.SignedOut) {
             status += " " + -1;
