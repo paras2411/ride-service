@@ -50,7 +50,7 @@ public class RideController {
     @GetMapping("/cabSignsOut")
     public boolean cabSignsOut(@RequestParam int cabId) {
 
-        return rideService.isCabSignedIn(cabId);
+        return rideService.isCabSignedInAndAvailable(cabId);
     }
 
     @GetMapping("/requestRide")
@@ -63,6 +63,7 @@ public class RideController {
         Cab[] cabs = rideService.getAllCabs(sourceLoc);
         int counter = 0;
         for(Cab cab: cabs) {
+            if(counter == 3) break;
             boolean acceptedRide= rideService.requestRide(cab.getCabId(), ride.getRideId(), sourceLoc, destinationLoc);
             if(acceptedRide) {
                 int fare = abs(destinationLoc - sourceLoc) * 10 + abs(cab.getLocation() - sourceLoc) * 10;
@@ -78,7 +79,7 @@ public class RideController {
                     rideService.rideCancelled(cab.getCabId(), ride.getRideId());
                 }
             }
-            if(counter++ >= 3) break;
+            counter++;
         }
         return -1;
     }

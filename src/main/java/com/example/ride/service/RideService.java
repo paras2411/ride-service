@@ -90,10 +90,10 @@ public class RideService {
         );
     }
 
-    public Boolean isCabSignedIn(int cabId) {
+    public Boolean isCabSignedInAndAvailable(int cabId) {
 
         return restTemplate.getForObject(
-                cabUrl + "cabSignedIn?" +
+                cabUrl + "cabSignedInAndAvailable?" +
                         "cabId=" + cabId,
                 Boolean.class
         );
