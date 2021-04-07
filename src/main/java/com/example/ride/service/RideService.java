@@ -1,36 +1,45 @@
 package com.example.ride.service;
 
 import com.example.ride.VO.Cab;
-import com.example.ride.entity.Ride;
-import com.example.ride.repositiory.RideRepository;
+import com.example.ride.VO.Ride;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 public class RideService {
 
     @Autowired
-    private RideRepository rideRepository;
-
-    @Autowired
     private RestTemplate restTemplate;
 
     private final String cabUrl = "http://localhost:8080/";
     private final String walletUrl = "http://localhost:8082/";
+    private final String databaseUrl = "http://localhost:8083/";
 
-    public Ride saveRide(Ride ride) {
+    public Ride[] saveRide(int custId,
+                         int sourceLoc,
+                         int destinationLoc) {
 
-        return rideRepository.save(ride);
+        ResponseEntity<Ride[]> response = restTemplate.getForEntity(
+                    databaseUrl + "saveRide?" +
+                            "custId=" + custId +
+                            "&sourceLoc=" + sourceLoc +
+                            "&destinationLoc=" + destinationLoc,
+                    Ride[].class);
+
+        return response.getBody();
     }
 
-    public int rideExtract(int custId) {
-        return rideRepository.ridesExtract(custId);
-    }
+    public Ride[] findByRideId(int rideId) {
 
-    public Ride findByRideId(int rideId) {
-        return rideRepository.findByRideId(rideId);
+        ResponseEntity<Ride[]> response = restTemplate.getForEntity(
+                databaseUrl + "findByRideId?" +
+                        "rideId=" + rideId,
+                Ride[].class
+        );
+        return response.getBody();
     }
 
     public Cab[] getAllCabs(int loc) {
@@ -136,7 +145,13 @@ public class RideService {
     }
 
     public void updateOngoing(int rideId, boolean b) {
-        rideRepository.updateOngoing(rideId, b);
+
+        restTemplate.getForObject(
+                databaseUrl + "updateOngoing?" +
+                        "rideId=" + rideId +
+                        "&ongoing=" + b,
+                Void.class
+        );
     }
 
     public Cab getCabsByCabId(int cabId) {
@@ -155,7 +170,4 @@ public class RideService {
         );
     }
 
-    public int getCustIdByRideId(int rideId) {
-        return rideRepository.getCustIdByRideId(rideId);
-    }
 }

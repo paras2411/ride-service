@@ -1,7 +1,7 @@
 package com.example.ride.controller;
 
 import com.example.ride.VO.Cab;
-import com.example.ride.entity.Ride;
+import com.example.ride.VO.Ride;
 import com.example.ride.service.RideService;
 import com.example.ride.utility.MajorState;
 import com.example.ride.utility.MinorState;
@@ -22,18 +22,22 @@ public class RideController {
     @Autowired
     private RideService rideService;
 
-    @PostMapping("/")
-    public Ride saveRide(@RequestBody Ride ride) {
+    @GetMapping("/saveRide")
+    public Ride[] saveRide(@RequestParam int custId,
+                         @RequestParam int sourceLoc,
+                         @RequestParam int destinationLoc) {
 
-        log.info("Inside saveRide of RideController");
-        return rideService.saveRide(ride);
+        return rideService.saveRide(custId, sourceLoc, destinationLoc);
     }
 
     @GetMapping("/rideEnded")
     public boolean rideEnded(@RequestParam int rideId) {
 
-        Ride ride = rideService.findByRideId(rideId);
-        boolean canRideEnd =  ride != null && ride.isOngoing();
+        Ride[] ride = rideService.findByRideId(rideId);
+        if(ride.length == 0) {
+            return false;
+        }
+        boolean canRideEnd =  ride[0] != null && ride[0].isOngoing();
         if(canRideEnd) {
             rideService.updateOngoing(rideId, false);
         }
@@ -58,29 +62,28 @@ public class RideController {
                            @RequestParam int sourceLoc,
                            @RequestParam int destinationLoc) {
 
-        if(sourceLoc < 0 || destinationLoc <= sourceLoc) {
+        if(sourceLoc < 0 || destinationLoc < 0) {
             return -1;
         }
 
-        Ride ride = new Ride(custId, sourceLoc, destinationLoc, false);
-        saveRide(ride);
+        Ride[] ride = saveRide(custId, sourceLoc, destinationLoc);
         Cab[] cabs = rideService.getAllCabs(sourceLoc);
         int counter = 0;
         for(Cab cab: cabs) {
             if(counter == 3) break;
-            boolean acceptedRide= rideService.requestRide(cab.getCabId(), ride.getRideId(), sourceLoc, destinationLoc);
+            boolean acceptedRide= rideService.requestRide(cab.getCabId(), ride[0].getRideId(), sourceLoc, destinationLoc);
             if(acceptedRide) {
                 int fare = abs(destinationLoc - sourceLoc) * 10 + abs(cab.getLocation() - sourceLoc) * 10;
                 boolean deductedAmount = rideService.deductAmountFromWallet(custId, fare);
                 if(deductedAmount) {
-                    boolean startedRide = rideService.rideStarted(cab.getCabId(), ride.getRideId());
+                    boolean startedRide = rideService.rideStarted(cab.getCabId(), ride[0].getRideId());
                     if(startedRide) {
-                        rideService.updateOngoing(ride.getRideId(), true);
-                        return ride.getRideId();
+                        rideService.updateOngoing(ride[0].getRideId(), true);
+                        return ride[0].getRideId();
                     }
                 }
                 else {
-                    rideService.rideCancelled(cab.getCabId(), ride.getRideId());
+                    rideService.rideCancelled(cab.getCabId(), ride[0].getRideId());
                 }
             }
             counter++;
@@ -118,9 +121,9 @@ public class RideController {
 
         if(cab.getMinorState() == MinorState.GivingRide) {
             int rideId = rideService.getRideId(cabId);
-            Ride ride = rideService.findByRideId(rideId);
-            status += " " + ride.getCustId();
-            status += " " + ride.getDestinationLoc();
+            Ride[] ride = rideService.findByRideId(rideId);
+            status += " " + ride[0].getCustId();
+            status += " " + ride[0].getDestinationLoc();
         }
 
         return status;
@@ -137,7 +140,6 @@ public class RideController {
         Cab[] cabsSignedIn = rideService.getAllSignedInCabs();
         for(Cab cab: cabsSignedIn) {
             rideService.cabSignOut(cab.getCabId());
-            log.info("" + cab.getCabId());
         }
 
     }
