@@ -58,6 +58,10 @@ public class RideController {
                            @RequestParam int sourceLoc,
                            @RequestParam int destinationLoc) {
 
+        if(sourceLoc < 0 || destinationLoc <= sourceLoc) {
+            return -1;
+        }
+
         Ride ride = new Ride(custId, sourceLoc, destinationLoc, false);
         saveRide(ride);
         Cab[] cabs = rideService.getAllCabs(sourceLoc);
