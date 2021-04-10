@@ -14,9 +14,9 @@ public class RideService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private final String cabUrl = "http://localhost:8080/";
-    private final String walletUrl = "http://localhost:8082/";
-    private final String databaseUrl = "http://localhost:8083/";
+    private final String cabUrl = "http://cab:8080/";
+    private final String walletUrl = "http://wallet:8082/";
+    private final String databaseUrl = "http://database:8083/";
 
     public Ride[] saveRide(int custId,
                          int sourceLoc,
